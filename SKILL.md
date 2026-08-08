@@ -25,21 +25,30 @@ Determine the following from the user. If they aren't provided in the initial pr
 - If **GitHub Gist**: Run `gh auth status`. If it fails, ask the user to run `gh auth login` before proceeding.
 - If **Confluence**: Check if `CONFLUENCE_PAT` and `CONFLUENCE_URL` are set in the environment. If not, ask the user for them, and explicitly pass them when you run the script (e.g. `CONFLUENCE_PAT="..." CONFLUENCE_URL="..." ./export_confluence.sh ...`). If they provide a full Confluence URL for the space (e.g., `.../wiki/spaces/ENG/overview`), YOU must parse out the space key (e.g. `ENG`).
 
-## 2. Pass 1: Raw Extraction
+## 2. Pass 1: Raw Extraction & Contextual Tone Alignment
 
-Read the conversation (use the `view_file` tool on `~/.gemini/antigravity/brain/<conversation-id>/.system_generated/logs/transcript.jsonl` where `<conversation-id>` is your current conversation ID available in your system prompt metadata).
+**A. Contextual Tone Alignment:** Use the `grep_search` or `run_command` tool with `find` to look for existing Markdown (`.md`) files in the user's workspace. Read 1 or 2 of these files to identify the project's existing tone and terminology. You will adopt this tone for the final document (while still adhering to the core Scribe formatting rules below).
+
+**B. Raw Extraction:** Read the current conversation (use the `view_file` tool on `~/.gemini/antigravity/brain/<conversation-id>/.system_generated/logs/transcript.jsonl` where `<conversation-id>` is your current conversation ID available in your system prompt metadata).
 Dump the raw events chronologically into a scratch file: `~/.gemini/antigravity/brain/<conversation-id>/scratch/raw_notes.md`.
 **Crucial:** If the user provided screenshots/images, explicitly note their absolute file paths in these raw notes!
 
-## 3. Pass 2: Synthesis & Multi-Page Detection
+## 3. Pass 2: Draft Approval Workflow (Outline First)
 
-Analyze your `raw_notes.md`. 
-Determine if the session covers **multiple distinct contexts/issues**. 
-- **If single context:** Generate one `document.md`.
-- **If multiple contexts (AND it is a Run Book or Cheat Sheet):** Generate a `parent.md` (which links to the children) and `child1.md`, `child2.md`, etc., for each distinct issue.
+Analyze your `raw_notes.md` and determine if the session covers **multiple distinct contexts/issues**. 
+Based on this, propose a **Table of Contents (Outline)** for the documentation.
+- **If single context:** Propose the structure for a single document.
+- **If multiple contexts (AND it is a Run Book or Cheat Sheet):** Propose a `parent.md` outline and outlines for `child1.md`, `child2.md`, etc., for each distinct issue.
+
+**STOP AND ASK THE USER:** Present the proposed Outline/Table of Contents to the user and ask for their explicit approval. Do NOT proceed to Pass 3 until the user approves the outline.
+
+## 4. Pass 3: Final Synthesis & Generation
+
+Once the user approves the outline, generate the final markdown files (`document.md`, or `parent.md`/`child.md`s).
 
 **CRITICAL STYLE CONSTRAINTS (APPLIES TO ALL MODES):**
 - **SHORT, CLEAR, CLEAN, NOT REPETITIVE, STRAIGHTFORWARD, SHORT SENTENCES**
+- Align with the contextual tone discovered in Pass 1.
 - Main title is H1 (`#`), subsections H2 (`##`). Bold **main words**.
 - Use GitHub alerts (`> [!INFO]`, `> [!WARNING]`, etc.). (The export script will automatically convert these to Confluence macros if needed).
 - **Screenshots:** If the raw notes mention useful screenshots, include them using standard markdown image syntax: `![Description](/absolute/path/to/image.png)`.
@@ -50,7 +59,7 @@ Determine if the session covers **multiple distinct contexts/issues**.
 - **full:** Includes key failed attempts, troubleshooting, and terminal commands used.
 - **ultra:** Deep dive into every rabbit hole, command, and error message.
 
-## 4. Export
+## 5. Export
 
 For **GitHub Gist:**
 Pass all generated markdown files to the script. The script will bundle them into one Gist.
