@@ -39,6 +39,7 @@ Analyze your `raw_notes.md` and determine if the session covers **multiple disti
 Based on this, propose a **Table of Contents (Outline)** for the documentation.
 - **If single context:** Propose the structure for a single document.
 - **If multiple contexts (AND it is a Run Book or Cheat Sheet):** Propose a `parent.md` outline and outlines for `child1.md`, `child2.md`, etc., for each distinct issue.
+  - **CRITICAL:** You MUST prefix the main H1 titles of the child pages with sequential numbers (e.g., `# 1. First Topic`, `# 2. Second Topic`) so they are ordered correctly in Confluence.
 
 **STOP AND ASK THE USER:** Present the proposed Outline/Table of Contents to the user and ask for their explicit approval. Do NOT proceed to Pass 3 until the user approves the outline.
 
