@@ -55,17 +55,26 @@ html = image_pattern.sub(image_replacer, html)
 
 import html as html_lib
 
-# Replace code blocks with Confluence code macros
+# Replace <pre><code> code blocks with Confluence code macros
 code_pattern = re.compile(r'<pre><code(?: class="language-([^"]+)")?>(.*?)</code></pre>', re.DOTALL)
 def code_replacer(match):
     lang = match.group(1) or 'none'
     code_content = match.group(2)
-    # unescape because marked escapes < and > but CDATA requires literal characters
     code_content = html_lib.unescape(code_content)
     code_content = code_content.replace(']]>', ']]]]><![CDATA[>')
     return f'<ac:structured-macro ac:name="code"><ac:parameter ac:name="language">{lang}</ac:parameter><ac:plain-text-body><![CDATA[{code_content}]]></ac:plain-text-body></ac:structured-macro>'
 
 html = code_pattern.sub(code_replacer, html)
+
+# Replace remaining <pre> code blocks (without <code>)
+pre_pattern = re.compile(r'<pre>(.*?)</pre>', re.DOTALL)
+def pre_replacer(match):
+    code_content = match.group(1)
+    code_content = html_lib.unescape(code_content)
+    code_content = code_content.replace(']]>', ']]]]><![CDATA[>')
+    return f'<ac:structured-macro ac:name="code"><ac:parameter ac:name="language">none</ac:parameter><ac:plain-text-body><![CDATA[{code_content}]]></ac:plain-text-body></ac:structured-macro>'
+
+html = pre_pattern.sub(pre_replacer, html)
 
 sys.stdout.write(html)
 EOF
